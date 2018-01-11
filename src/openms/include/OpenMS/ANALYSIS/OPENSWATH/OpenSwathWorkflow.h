@@ -134,8 +134,6 @@ namespace OpenMS
       bool sonar = false,
       bool load_into_memory = false);
 
-  private:
-
     /** @brief Perform RT and m/z correction using the MRMFeatureFinderScoring
      *
      * @param transition_exp_ The transitions for the normalization peptides
@@ -161,6 +159,8 @@ namespace OpenMS
       const String & mz_correction_function,
       double mz_extraction_window,
       bool ppm);
+
+  private:
 
     /// Simple method to extract chromatograms (for the RT-normalization peptides)
     void simpleExtractChromatograms(const std::vector< OpenSwath::SwathMap > & swath_maps,
