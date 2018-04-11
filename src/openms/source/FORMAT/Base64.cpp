@@ -33,7 +33,6 @@
 // --------------------------------------------------------------------------
 
 #include <OpenMS/FORMAT/Base64.h>
-#include <OpenMS/CONCEPT/Exception.h>
 
 #include <QtCore/QList>
 #include <QtCore/QString>
@@ -162,8 +161,7 @@ print s
         case Z_BUF_ERROR:
           compressed_length *= 2;
         }
-      }
-      while (zlib_error == Z_BUF_ERROR);
+      } while (zlib_error == Z_BUF_ERROR);
 
       if (zlib_error != Z_OK)
       {
