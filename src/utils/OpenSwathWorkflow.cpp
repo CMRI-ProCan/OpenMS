@@ -396,6 +396,27 @@ public:
 
 protected:
 
+
+    void outputArgs(std::ostream& ostream, int argc, const char **argv) {
+      ostream << "Arguments provided:" << std::endl;
+      ostream << argv[0];
+      for (int i = 1; i < argc; i++) // Yes, 1. Let's not output the program name again.
+      {
+        if (argv[i][0] == '-')
+        {
+          // It starts with a hyphen so is a new option, terminate the current line
+          ostream << std::endl << '\t' << argv[i];
+        }
+        else
+        {
+          // It's an argument to the previous option. Or at least we're interpreting it as such.
+          ostream << ' ' << argv[i];
+        }
+      }
+      ostream << std::endl;
+    }
+
+
   void registerOptionsAndFlags_() override
   {
     registerInputFileList_("in", "<files>", StringList(), "Input files separated by blank");
@@ -671,8 +692,13 @@ protected:
     return trafo_rtnorm;
   }
 
-  ExitCodes main_(int, const char **) override
+  ExitCodes main_(int argc, const char** argv) override
   {
+    ///////////////////////////////////
+    // Log the arguments provided
+    ///////////////////////////////////
+    outputArgs(std::cout, argc, argv);
+
     ///////////////////////////////////
     // Prepare Parameters
     ///////////////////////////////////
