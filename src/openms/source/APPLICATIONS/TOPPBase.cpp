@@ -88,6 +88,27 @@ namespace OpenMS
       "Nat Meth. 2016; 13, 9: 741-748",
       "10.1038/nmeth.3959" };
 
+
+    void log_arguments(std::ostream& ostream, int argc, const char **argv) {
+        ostream << "Arguments provided are:" << std::endl;
+        ostream << argv[0];
+        for (int i = 1; i < argc; i++) // Yes, 1. Let's not output the program name again.
+        {
+            if (argv[i][0] == '-')
+            {
+                // It starts with a hyphen so is a new option, terminate the current line
+                ostream << std::endl << '\t' << argv[i];
+            }
+            else
+            {
+                // It's an argument to the previous option. Or at least we're interpreting it as such.
+                ostream << ' ' << argv[i];
+            }
+        }
+        ostream << std::endl;
+    }
+
+
   void TOPPBase::setMaxNumberOfThreads(int
 #ifdef _OPENMP
                                        num_threads // to avoid the unused warning we enable this
@@ -168,7 +189,8 @@ namespace OpenMS
     registerFlag_("force", "Overwrite tool specific checks.", true);
     registerFlag_("test", "Enables the test mode (needed for internal use only)", true);
     registerFlag_("-help", "Shows options");
-    registerFlag_("-helphelp", "Shows all options (including advanced)", false);
+      registerFlag_("-helphelp", "Shows all options (including advanced)", false);
+      registerFlag_("-log_arguments", "Print out all the command line arguments", false);
 
     // parse command line parameters:
     try
@@ -214,6 +236,12 @@ namespace OpenMS
       printUsage_();
       return ILLEGAL_PARAMETERS;
     }
+
+      // '--log_arguments' given
+      if (param_cmdline_.exists("-log_arguments"))
+      {
+          log_arguments(std::cout, argc, argv);
+      }
 
     // '--help' given
     if (param_cmdline_.exists("-help") || param_cmdline_.exists("-helphelp"))
