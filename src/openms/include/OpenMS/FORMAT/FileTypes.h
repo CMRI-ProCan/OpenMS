@@ -109,6 +109,7 @@ namespace OpenMS
       SPLIB,              ///< SpectraST binary spectral library file (sptxt is the equivalent text-based format, similar to the MSP format)
       NOVOR,               ///< Novor custom parameter file
       XQUESTXML,          ///< xQuest XML file format for protein-protein cross-link identifications (.xquest.xml)
+      TOF,                ///< ProCan toffee file format
       SIZE_OF_TYPE        ///< No file type. Simply stores the number of types
     };
 
