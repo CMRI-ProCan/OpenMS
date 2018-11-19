@@ -444,6 +444,8 @@ protected:
 
     registerOutputFile_("out_chrom", "<file>", "", "Also output all computed chromatograms output in mzML (chrom.mzML) or sqMass (SQLite format)", false, true);
     setValidFormats_("out_chrom", ListUtils::create<String>("mzML,sqMass"));
+    registerFlag_("chrom_uncompressed", "Do not compress the output mzML chromatograms");
+    registerFlag_("chrom_unsmoothed", "Do not smooth the output mzML chromatograms");
 
     registerDoubleOption_("min_upper_edge_dist", "<double>", 0.0, "Minimal distance to the edge to still consider a precursor, in Thomson", false, true);
     registerDoubleOption_("rt_extraction_window", "<double>", 600.0, "Only extract RT around this value (-1 means extract over the whole range, a value of 600 means to extract around +/- 300 s of the expected elution).", false);
@@ -763,6 +765,8 @@ protected:
     String trafo_in = getStringOption_("rt_norm");
 
     String out_chrom = getStringOption_("out_chrom");
+    bool chrom_compress = !getFlag_("chrom_uncompressed");
+    bool chrom_smooth = !getFlag_("chrom_unsmoothed");
     bool ppm = getFlag_("ppm");
     bool irt_ppm = getFlag_("ppm_irtwindow");
     bool split_file = getFlag_("split_file_input");
@@ -996,7 +1000,12 @@ protected:
         chromConsumer->setExpectedSize(0, expected_chromatograms);
         chromConsumer->setExperimentalSettings(*exp_meta);
         chromConsumer->getOptions().setWriteIndex(true);  // ensure that we write the index
-        chromConsumer->addDataProcessing(getProcessingInfo_(DataProcessing::SMOOTHING));
+        if (chrom_smooth) {
+            LOG_INFO << "Output mzML chromatograms will be smoothed" << std::endl;
+            chromConsumer->addDataProcessing(getProcessingInfo_(DataProcessing::SMOOTHING));
+        } else {
+            LOG_INFO << "Output mzML chromatograms will not be smoothed" << std::endl;
+        }
 
         // prepare data structures for lossy compression
         MSNumpressCoder::NumpressConfig npconfig_mz;
@@ -1005,13 +1014,20 @@ protected:
         npconfig_int.estimate_fixed_point = true; // critical
         npconfig_mz.numpressErrorTolerance = -1.0; // skip check, faster
         npconfig_int.numpressErrorTolerance = -1.0; // skip check, faster
-        npconfig_mz.setCompression("linear");
-        npconfig_int.setCompression("slof");
+        if (chrom_compress) {
+            LOG_INFO << "Output mzML chromatograms will be compressed" << std::endl;
+            npconfig_mz.setCompression("linear");
+            npconfig_int.setCompression("slof");
+        } else {
+            LOG_INFO << "Output mzML chromatograms will not be compressed" << std::endl;
+            npconfig_mz.setCompression("none");
+            npconfig_int.setCompression("none");
+        }
         npconfig_mz.linear_fp_mass_acc = 0.05; // set the desired RT accuracy in seconds
 
         chromConsumer->getOptions().setNumpressConfigurationMassTime(npconfig_mz);
         chromConsumer->getOptions().setNumpressConfigurationIntensity(npconfig_int);
-        chromConsumer->getOptions().setCompression(true);
+        chromConsumer->getOptions().setCompression(chrom_compress);
 
         chromatogramConsumer = chromConsumer;
       }
